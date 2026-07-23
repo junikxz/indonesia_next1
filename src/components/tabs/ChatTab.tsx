@@ -90,7 +90,7 @@ export default function ChatTab() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ceritain perasaanmu..."
-          className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+          className="flex-1 px-4 py-3 text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
           disabled={isLoading}
         />
         <button
