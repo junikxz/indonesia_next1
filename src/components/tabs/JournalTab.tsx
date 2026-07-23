@@ -116,6 +116,7 @@ export default function JournalTab() {
           onChange={(e) => setJournal(e.target.value)}
           placeholder="Ceritain kejadian menarik, hal yang bikin sedih, atau apapun yang ada di pikiranmu..."
           className="w-full min-h-[150px] p-4 text-slate-900 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all resize-y"
+        />
         
         <div className="flex justify-between items-center mt-4">
           <button
