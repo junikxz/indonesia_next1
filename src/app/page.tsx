@@ -29,7 +29,7 @@ export default function Home() {
           <div className="bg-emerald-500 p-2 rounded-xl">
             <HeartLogo />
           </div>
-          <span className="text-2xl font-extrabold text-slate-800 tracking-tight">Happify</span>
+          <span className="text-2xl font-extrabold text-slate-800 tracking-tight">MindHealth</span>
         </div>
         
         <nav className="flex-1 space-y-2">
@@ -60,7 +60,7 @@ export default function Home() {
             <div className="bg-emerald-500 p-1.5 rounded-lg">
               <HeartLogo size={16} />
             </div>
-            <span className="text-xl font-extrabold text-slate-800">Happify</span>
+            <span className="text-xl font-extrabold text-slate-800">MindHealth</span>
           </div>
 
           <AnimatePresence mode="wait">

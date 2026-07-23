@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 export default function ChatTab() {
   const [messages, setMessages] = useState<{ role: 'user' | 'bot'; content: string }[]>([
-    { role: 'bot', content: 'Halo! Aku Happify, sahabat AI kamu. Ada yang mau diceritain hari ini?' }
+    { role: 'bot', content: 'Halo! Aku MindHealth, sahabat AI kamu. Ada yang mau diceritain hari ini?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +46,7 @@ export default function ChatTab() {
       <div className="bg-emerald-500 p-4 text-white flex items-center gap-3">
         <Bot size={24} />
         <div>
-          <h2 className="font-bold text-lg">Chat dengan Happify</h2>
+          <h2 className="font-bold text-lg">Chat dengan MindHealth</h2>
           <p className="text-emerald-100 text-sm">Online • Siap mendengarkanmu</p>
         </div>
       </div>
