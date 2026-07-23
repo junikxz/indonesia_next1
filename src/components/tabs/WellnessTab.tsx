@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Play, Coffee, Activity, Moon, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Play, Coffee, Activity, Moon, X, Stars } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function WellnessTab() {
   const [activeActivity, setActiveActivity] = useState<string | null>(null);
+  const [stretchStep, setStretchStep] = useState(0);
 
   const activities = [
     {
@@ -31,6 +32,37 @@ export default function WellnessTab() {
       border: 'border-indigo-100'
     }
   ];
+
+  const stretchInstructions = [
+    "Siap-siap...",
+    "Tarik napas panjang, luruskan punggung.",
+    "Putar leher ke kanan perlahan...",
+    "Tahan... 3", "Tahan... 2", "Tahan... 1",
+    "Kembali ke tengah.",
+    "Putar leher ke kiri perlahan...",
+    "Tahan... 3", "Tahan... 2", "Tahan... 1",
+    "Kembali ke tengah.",
+    "Tarik bahu ke atas dekat telinga...",
+    "Lepaskan sambil buang napas perlahan.",
+    "Selesai! Kamu hebat."
+  ];
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (activeActivity === 'stretch') {
+      setStretchStep(0);
+      interval = setInterval(() => {
+        setStretchStep((prev) => {
+          if (prev >= stretchInstructions.length - 1) {
+            clearInterval(interval);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [activeActivity]);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto relative">
@@ -114,36 +146,87 @@ export default function WellnessTab() {
           </motion.div>
         )}
 
-        {/* Other activities placeholder modal */}
-        {(activeActivity === 'stretch' || activeActivity === 'sleep') && (
+        {activeActivity === 'stretch' && (
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-blue-50 flex flex-col items-center justify-center p-6 text-center"
           >
-            <motion.div 
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              className="bg-white rounded-3xl p-8 max-w-sm w-full relative"
+            <button 
+              onClick={() => setActiveActivity(null)}
+              className="absolute top-8 right-8 p-3 bg-white rounded-full shadow-sm text-slate-500 hover:text-slate-800"
             >
-              <button 
-                onClick={() => setActiveActivity(null)}
-                className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-800"
+              <X size={24} />
+            </button>
+            <div className="w-24 h-24 bg-blue-200 text-blue-600 rounded-full flex items-center justify-center mb-8 mx-auto">
+              <Activity size={48} />
+            </div>
+            
+            <AnimatePresence mode="wait">
+              <motion.h2
+                key={stretchStep}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="text-4xl md:text-5xl font-bold text-blue-600"
               >
-                <X size={20} />
-              </button>
-              <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-2xl flex items-center justify-center mb-6 mx-auto">
-                <Play size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-800 text-center mb-2">Segera Hadir!</h3>
-              <p className="text-slate-500 text-center">Modul video dan animasi interaktif untuk sesi ini sedang dalam tahap pengembangan (Hackathon mode!).</p>
-              <button 
+                {stretchInstructions[stretchStep]}
+              </motion.h2>
+            </AnimatePresence>
+
+            {stretchStep === stretchInstructions.length - 1 && (
+              <motion.button 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                 onClick={() => setActiveActivity(null)}
-                className="mt-8 w-full bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-slate-800 transition-colors"
+                className="mt-12 bg-blue-500 text-white font-bold py-3 px-8 rounded-xl hover:bg-blue-600 transition-colors"
               >
-                Kembali
-              </button>
+                Tutup
+              </motion.button>
+            )}
+          </motion.div>
+        )}
+
+        {activeActivity === 'sleep' && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-900 flex flex-col items-center justify-center p-6 text-center text-white"
+          >
+            <button 
+              onClick={() => setActiveActivity(null)}
+              className="absolute top-8 right-8 p-3 bg-slate-800 rounded-full shadow-sm text-slate-400 hover:text-white"
+            >
+              <X size={24} />
+            </button>
+            <motion.div 
+              animate={{ rotate: 360 }} 
+              transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+              className="absolute top-20 left-20 opacity-20"
+            >
+              <Stars size={120} />
+            </motion.div>
+            <motion.div 
+              animate={{ rotate: -360 }} 
+              transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
+              className="absolute bottom-20 right-20 opacity-20"
+            >
+              <Stars size={80} />
+            </motion.div>
+
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.5, duration: 2 }}
+              className="z-10"
+            >
+              <Moon size={64} className="text-indigo-300 mx-auto mb-8" />
+              <h2 className="text-4xl font-light tracking-wide mb-6">Matikan Layarmu.</h2>
+              <p className="text-slate-400 text-lg max-w-md mx-auto leading-relaxed">
+                Sudah waktunya istirahat. Kurangi cahaya dari layarmu, bernapas perlahan, dan biarkan dirimu terlelap.<br/><br/>
+                Kamu sudah bekerja keras hari ini.
+              </p>
             </motion.div>
           </motion.div>
         )}

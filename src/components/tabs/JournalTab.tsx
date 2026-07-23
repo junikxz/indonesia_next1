@@ -1,15 +1,28 @@
 import { useState, useEffect } from 'react';
-import { PenLine, Save } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { PenLine, Save, Mic, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { supabase } from '@/lib/supabaseClient';
+import { useSpeechToText } from '@/hooks/useSpeechToText';
 
 export default function JournalTab() {
   const [journal, setJournal] = useState('');
   const [entries, setEntries] = useState<{ id: string, created_at: string, description: string }[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [summaryData, setSummaryData] = useState<string | null>(null);
+  const { isListening, transcript, toggleListening, setTranscript } = useSpeechToText();
+
+  useEffect(() => {
+    if (transcript) {
+      setJournal((prev) => {
+        const base = prev.replace(new RegExp(transcript.slice(0, -10) + '.*$'), ''); 
+        return transcript;
+      });
+    }
+  }, [transcript]);
 
   // Fetch data dari database saat pertama kali load
   useEffect(() => {
@@ -42,6 +55,7 @@ export default function JournalTab() {
     setIsSaving(true);
     
     const newContent = `📝 Jurnal:\n${journal}`;
+    setTranscript('');
     
     try {
       const { data, error } = await supabase
@@ -66,6 +80,29 @@ export default function JournalTab() {
     }
   };
 
+  const handleSummarize = async () => {
+    if (entries.length === 0) return;
+    setIsSummarizing(true);
+    try {
+      const response = await fetch('/api/journal/summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entries: entries.slice(0, 5).map(e => ({
+            date: format(new Date(e.created_at), 'd MMMM yyyy', { locale: id }),
+            content: e.description.replace('📝 Jurnal:\n', '')
+          }))
+        })
+      });
+      const data = await response.json();
+      setSummaryData(data.summary || data.error);
+    } catch (err) {
+      setSummaryData('Gagal menganalisis jurnal.');
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
@@ -79,9 +116,17 @@ export default function JournalTab() {
           onChange={(e) => setJournal(e.target.value)}
           placeholder="Ceritain kejadian menarik, hal yang bikin sedih, atau apapun yang ada di pikiranmu..."
           className="w-full min-h-[150px] p-4 text-slate-900 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all resize-y"
-        />
         
-        <div className="flex justify-end mt-4">
+        <div className="flex justify-between items-center mt-4">
+          <button
+            onClick={toggleListening}
+            className={`p-3 rounded-xl transition-colors flex items-center justify-center gap-2 ${
+              isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            <Mic size={18} /> {isListening ? 'Mendengarkan...' : 'Gunakan Suara'}
+          </button>
+          
           <button 
             onClick={handleSave}
             disabled={isSaving || !journal.trim()}
@@ -93,7 +138,32 @@ export default function JournalTab() {
       </div>
 
       <div className="space-y-4">
-        <h3 className="font-bold text-slate-800 text-lg ml-2">Jurnal Sebelumnya</h3>
+        <div className="flex items-center justify-between ml-2">
+          <h3 className="font-bold text-slate-800 text-lg">Jurnal Sebelumnya</h3>
+          {entries.length > 0 && (
+            <button 
+              onClick={handleSummarize}
+              disabled={isSummarizing}
+              className="text-sm bg-indigo-50 text-indigo-600 hover:bg-indigo-100 py-1.5 px-3 rounded-lg font-semibold flex items-center gap-1 transition-colors disabled:opacity-50"
+            >
+              <Sparkles size={14} /> {isSummarizing ? 'Menganalisis...' : 'Analisis AI'}
+            </button>
+          )}
+        </div>
+
+        <AnimatePresence>
+          {summaryData && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="bg-indigo-50 border border-indigo-100 rounded-3xl p-6 text-indigo-900 shadow-sm"
+            >
+              <h4 className="font-bold mb-2 flex items-center gap-2"><Sparkles size={16} /> Insight Kondisi Mentalmu</h4>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{summaryData}</p>
+            </motion.div>
+          )}
+        </AnimatePresence>
         
         {isLoading ? (
           <p className="text-slate-500 ml-2 animate-pulse">Memuat jurnal dari database...</p>

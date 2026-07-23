@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, Mic } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useSpeechToText } from '@/hooks/useSpeechToText';
 
 export default function ChatTab() {
   const [messages, setMessages] = useState<{ role: 'user' | 'bot'; content: string }[]>([
@@ -9,6 +10,18 @@ export default function ChatTab() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  
+  const { isListening, transcript, toggleListening, setTranscript } = useSpeechToText();
+
+  useEffect(() => {
+    if (transcript) {
+      setInput((prev) => {
+        // Simple heuristic to append transcript to existing input
+        const base = prev.replace(new RegExp(transcript.slice(0, -10) + '.*$'), ''); 
+        return transcript;
+      });
+    }
+  }, [transcript]);
 
   useEffect(() => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -20,6 +33,7 @@ export default function ChatTab() {
 
     const userMessage = input.trim();
     setInput('');
+    setTranscript('');
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
 
@@ -93,6 +107,15 @@ export default function ChatTab() {
           className="flex-1 px-4 py-3 text-slate-900 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
           disabled={isLoading}
         />
+        <button
+          type="button"
+          onClick={toggleListening}
+          className={`p-3 rounded-xl transition-colors flex items-center justify-center w-12 ${
+            isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+          }`}
+        >
+          <Mic size={20} />
+        </button>
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
