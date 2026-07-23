@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🧠 MindHealth
 
-## Getting Started
+> **AI-powered mental wellness platform for early detection, meaningful support, and lifelong emotional growth.**
 
-First, run the development server:
+MindHealth (awalnya bernama Happify) adalah aplikasi *mental wellness* bergaya modern (Gen-Z friendly) yang dirancang khusus untuk memonitor, mendengarkan, dan membantu meningkatkan kesehatan mental para penggunanya. Dibangun dalam waktu singkat untuk keperluan Hackathon, aplikasi ini mengombinasikan antarmuka yang dinamis dengan kecerdasan buatan (Google Gemini) untuk memberikan dukungan emosional 24/7.
 
+---
+
+## ✨ Fitur Utama
+
+- 📊 **Interactive Dashboard & Mood Tracking:** Lacak perasaanmu setiap hari. Sistem otomatis menganalisis *mood* kamu selama seminggu terakhir dan memberikan *insight* unik.
+- 🤖 **AI Chatbot Companion:** Teman curhat AI yang suportif, empatik, dan pengertian (di-tenagai oleh model **Gemini 2.5 Flash**). Memiliki memori sesi untuk percakapan yang mengalir natural.
+- 📝 **Smart Journaling + AI Summary:** Tuliskan keluh kesahmu, simpan ke database, dan biarkan AI merangkum kondisi mentalmu sekaligus memberikan saran positif (didukung oleh *Speech-to-Text*).
+- 🧘‍♀️ **Interactive Wellness Activities:** Jangan cuma *mockup*! Rasakan animasi interaktif pemandu pernapasan (*Mindful Breathing*), panduan *Stretching*, hingga mode malam (*Sleep Hygiene*).
+- 👩‍⚕️ **Professional Help Booking:** Akses cepat ke profesional (*Psikolog*) dengan simulasi fitur pemesanan jadwal yang modern.
+- 🎤 **Speech-to-Text (Aksesibilitas):** Malas mengetik? Cukup tekan tombol mikrofon di menu Chat atau Journal, dan berbicaralah. (Memanfaatkan native *Web Speech API*).
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+- **Frontend:** [Next.js](https://nextjs.org/) (App Router), React 19
+- **Styling & Animasi:** [Tailwind CSS](https://tailwindcss.com/) & [Framer Motion](https://www.framer.com/motion/)
+- **Database:** [Supabase](https://supabase.com/) (Menyimpan riwayat Jurnal & Mood secara real-time)
+- **AI Integration:** [Google Gemini AI](https://deepmind.google/technologies/gemini/) (`@google/genai`)
+- **Icons & Typography:** Lucide React, Google Fonts
+
+---
+
+## 🚀 Cara Menjalankan di Lokal (Local Setup)
+
+Untuk menjalankan proyek ini di komputermu sendiri, ikuti langkah-langkah berikut:
+
+### 1. Clone Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/junikxz/indonesia_next1.git
+cd indonesia_next1
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Instalasi Dependensi
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Konfigurasi Environment Variables
+Buat file bernama `.env.local` di *root folder* proyek, lalu salin struktur dari `.env.example` dan masukkan kunci rahasiamu:
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+GEMINI_API_KEY=your_gemini_api_key
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Database Setup (Supabase)
+Jalankan perintah SQL berikut di **SQL Editor** Supabase-mu untuk membuat tabel riwayat data:
+```sql
+CREATE TABLE IF NOT EXISTS public.history (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    description TEXT NOT NULL
+);
 
-## Learn More
+-- Matikan RLS untuk kemudahan prototipe Hackathon (atau buat policy)
+ALTER TABLE public.history DISABLE ROW LEVEL SECURITY;
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 5. Jalankan Server
+```bash
+npm run dev
+```
+Buka [http://localhost:3000](http://localhost:3000) di browser (sangat disarankan menggunakan **Google Chrome** agar fitur *Speech-to-Text* berjalan lancar).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Dibuat dengan ❤️ untuk Hackathon Mental Health.*
