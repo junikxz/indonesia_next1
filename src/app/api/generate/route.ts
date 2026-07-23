@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { GoogleGenAI } from '@google/genai';
 import { supabase } from '@/lib/supabaseClient';
 
-// Inisialisasi OpenAI client (dibutuhkan API key di env)
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'dummy_key', 
-});
+// Inisialisasi Gemini client
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'dummy_key' });
 
 export async function POST(req: Request) {
   try {
@@ -19,8 +17,8 @@ export async function POST(req: Request) {
     }
 
     // Jika API Key tidak diset (karena ini latihan), kita berikan response dummy
-    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'dummy_key') {
-      console.warn("OPENAI_API_KEY is not set. Returning mock data.");
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'dummy_key') {
+      console.warn("GEMINI_API_KEY is not set. Returning mock data.");
       // MOCK DATA for testing purpose
       const mockResponse = [
         `Tumbler Kopi Custom untuk ${recipient} buat hadiah ${occasion}`,
@@ -45,22 +43,15 @@ export async function POST(req: Request) {
       });
     }
 
-    // Pemanggilan AI sesungguhnya jika API key tersedia
-    const completion = await openai.chat.completions.create({
-      messages: [
-        {
-          role: "system",
-          content: "Kamu adalah seorang ahli pemberi saran hadiah. Berikan 4 ide hadiah yang kreatif, unik, dan bermanfaat berdasarkan siapa penerimanya dan apa acaranya. Format jawaban hanya berupa list ide tanpa nomor, dipisah dengan baris baru."
-        },
-        {
-          role: "user",
-          content: `Tolong berikan ide kado untuk: ${recipient} dalam rangka ${occasion}`
-        }
-      ],
-      model: "gpt-3.5-turbo",
+    // Pemanggilan Gemini AI sesungguhnya jika API key tersedia
+    const prompt = `Kamu adalah seorang ahli pemberi saran hadiah. Berikan 4 ide hadiah yang kreatif, unik, dan bermanfaat berdasarkan siapa penerimanya dan apa acaranya. Format jawaban hanya berupa list ide tanpa nomor, dipisah dengan baris baru.\n\nTolong berikan ide kado untuk: ${recipient} dalam rangka ${occasion}`;
+    
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
     });
 
-    const aiResponse = completion.choices[0].message.content || "";
+    const aiResponse = response.text || "";
     const ideas = aiResponse.split('\n').filter(idea => idea.trim() !== '');
 
     // Simpan ke database Supabase
