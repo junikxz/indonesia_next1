@@ -23,7 +23,12 @@ export function useSpeechToText() {
         };
 
         recognitionRef.current.onerror = (event: any) => {
-          console.error('Speech recognition error', event.error);
+          console.warn('Speech recognition error:', event.error);
+          if (event.error === 'network') {
+            alert('Gagal mengakses layanan Speech-to-Text. Pastikan kamu terhubung ke internet dan menggunakan browser Google Chrome.');
+          } else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+            alert('Izin mikrofon ditolak. Silakan izinkan mikrofon di pengaturan browsermu.');
+          }
           setIsListening(false);
         };
 
