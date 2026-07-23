@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { supabase } from '@/lib/supabaseClient';
 
 // Inisialisasi OpenAI client (dibutuhkan API key di env)
 const openai = new OpenAI({
@@ -21,13 +22,26 @@ export async function POST(req: Request) {
     if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'dummy_key') {
       console.warn("OPENAI_API_KEY is not set. Returning mock data.");
       // MOCK DATA for testing purpose
+      const mockResponse = [
+        `Tumbler Kopi Custom untuk ${recipient} buat hadiah ${occasion}`,
+        `Buku Self-Improvement yang cocok dibaca saat ${occasion}`,
+        `Voucher Belanja senilai Rp 100.000 untuk ${recipient}`,
+        `Lampu Tidur Estetik untuk mempercantik kamar`
+      ];
+
+      // Simpan mock data ke database Supabase untuk ngetes
+      const { error: dbError } = await supabase
+        .from('history') // Pastikan nama tabelnya adalah 'history'
+        .insert([
+          { description: `(MOCK) Ide Kado untuk ${recipient} dalam rangka ${occasion}:\n${mockResponse.join('\n')}` }
+        ]);
+        
+      if (dbError) {
+        console.error("Supabase Insert Error:", dbError);
+      }
+
       return NextResponse.json({
-        ideas: [
-          `Tumbler Kopi Custom untuk ${recipient} buat hadiah ${occasion}`,
-          `Buku Self-Improvement yang cocok dibaca saat ${occasion}`,
-          `Voucher Belanja senilai Rp 100.000 untuk ${recipient}`,
-          `Lampu Tidur Estetik untuk mempercantik kamar`
-        ]
+        ideas: mockResponse
       });
     }
 
@@ -48,6 +62,17 @@ export async function POST(req: Request) {
 
     const aiResponse = completion.choices[0].message.content || "";
     const ideas = aiResponse.split('\n').filter(idea => idea.trim() !== '');
+
+    // Simpan ke database Supabase
+    const { error: dbError } = await supabase
+      .from('history') // Pastikan nama tabelnya adalah 'history'
+      .insert([
+        { description: `Ide Kado untuk ${recipient} dalam rangka ${occasion}:\n${aiResponse}` }
+      ]);
+      
+    if (dbError) {
+      console.error("Supabase Insert Error:", dbError);
+    }
 
     return NextResponse.json({ ideas });
   } catch (error) {
