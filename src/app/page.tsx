@@ -1,106 +1,112 @@
 'use client';
 
 import { useState } from 'react';
+import { LayoutDashboard, MessageCircleHeart, BookHeart, Activity, Stethoscope } from 'lucide-react';
+import DashboardTab from '@/components/tabs/DashboardTab';
+import ChatTab from '@/components/tabs/ChatTab';
+import JournalTab from '@/components/tabs/JournalTab';
+import WellnessTab from '@/components/tabs/WellnessTab';
+import ProfessionalTab from '@/components/tabs/ProfessionalTab';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Home() {
-  const [recipient, setRecipient] = useState('');
-  const [occasion, setOccasion] = useState('');
-  const [ideas, setIdeas] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
-  const generateIdeas = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    try {
-      const res = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recipient, occasion }),
-      });
-      
-      const data = await res.json();
-      if (data.ideas) {
-        setIdeas(data.ideas);
-      }
-    } catch (error) {
-      console.error('Error generating ideas', error);
-      alert('Terjadi kesalahan saat memproses permintaan');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard size={24} /> },
+    { id: 'chat', label: 'AI Chat', icon: <MessageCircleHeart size={24} /> },
+    { id: 'journal', label: 'Journal', icon: <BookHeart size={24} /> },
+    { id: 'wellness', label: 'Wellness', icon: <Activity size={24} /> },
+    { id: 'professional', label: 'Professional', icon: <Stethoscope size={24} /> },
+  ];
 
   return (
-    <main className="min-h-screen bg-gray-50 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-        <div>
-          <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">
-            Gift Idea Generator 🎁
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Keresahan: "Susah nyari kado yang pas buat orang tersayang"
-          </p>
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row font-sans">
+      
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-slate-100 p-6 sticky top-0 h-screen">
+        <div className="flex items-center gap-2 mb-12">
+          <div className="bg-emerald-500 p-2 rounded-xl">
+            <HeartLogo />
+          </div>
+          <span className="text-2xl font-extrabold text-slate-800 tracking-tight">Happify</span>
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={generateIdeas}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="recipient" className="block text-sm font-medium text-gray-700">
-                Untuk Siapa? (Contoh: Ibu, Pacar, Teman Kerja)
-              </label>
-              <input
-                id="recipient"
-                name="recipient"
-                type="text"
-                required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm mt-1"
-                placeholder="Teman Kerja"
-                value={recipient}
-                onChange={(e) => setRecipient(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="occasion" className="block text-sm font-medium text-gray-700">
-                Rangka Dalam Acara Apa? (Contoh: Ulang Tahun, Resign)
-              </label>
-              <input
-                id="occasion"
-                name="occasion"
-                type="text"
-                required
-                className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm mt-1"
-                placeholder="Perpisahan (Resign)"
-                value={occasion}
-                onChange={(e) => setOccasion(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div>
+        <nav className="flex-1 space-y-2">
+          {tabs.map((tab) => (
             <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 transition-colors"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium ${
+                activeTab === tab.id 
+                  ? 'bg-emerald-50 text-emerald-600' 
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+              }`}
             >
-              {loading ? 'Sedang Memikirkan...' : 'Dapatkan Ide Kado'}
+              <div className={`${activeTab === tab.id ? 'scale-110' : ''} transition-transform`}>
+                {tab.icon}
+              </div>
+              {tab.label}
             </button>
-          </div>
-        </form>
+          ))}
+        </nav>
+      </aside>
 
-        {ideas.length > 0 && (
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Ide Kado Untukmu:</h3>
-            <ul className="space-y-3">
-              {ideas.map((idea, index) => (
-                <li key={index} className="bg-indigo-50 p-3 rounded-md text-indigo-900 text-sm">
-                  {idea}
-                </li>
-              ))}
-            </ul>
+      {/* Main Content */}
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto mb-20 md:mb-0">
+        <div className="max-w-4xl mx-auto">
+          {/* Mobile Header */}
+          <div className="md:hidden flex items-center justify-center gap-2 mb-6">
+            <div className="bg-emerald-500 p-1.5 rounded-lg">
+              <HeartLogo size={16} />
+            </div>
+            <span className="text-xl font-extrabold text-slate-800">Happify</span>
           </div>
-        )}
-      </div>
-    </main>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeTab === 'dashboard' && <DashboardTab />}
+              {activeTab === 'chat' && <ChatTab />}
+              {activeTab === 'journal' && <JournalTab />}
+              {activeTab === 'wellness' && <WellnessTab />}
+              {activeTab === 'professional' && <ProfessionalTab />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </main>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around p-2 pb-safe z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex flex-col items-center p-2 rounded-xl min-w-[4rem] ${
+              activeTab === tab.id ? 'text-emerald-500' : 'text-slate-400'
+            }`}
+          >
+            <div className={`${activeTab === tab.id ? 'scale-110' : ''} transition-transform mb-1`}>
+              {tab.icon}
+            </div>
+            <span className="text-[10px] font-semibold">{tab.label}</span>
+          </button>
+        ))}
+      </nav>
+
+    </div>
+  );
+}
+
+function HeartLogo({ size = 24 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+    </svg>
   );
 }
